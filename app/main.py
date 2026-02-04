@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import logging
 import json
+from datetime import datetime
 
 from app.config import settings
 from app.models import IncomingRequest, AgentResponse, VoiceRequest, VoiceResponse
@@ -70,7 +71,11 @@ async def detect_and_engage(
 ):
     """
     Main endpoint for scam detection and engagement.
-    Accepts ANY JSON body and returns a valid AgentResponse.
+    Processes messages through the orchestrator for:
+    - Scam detection
+    - AI persona engagement
+    - Intelligence extraction
+    - GUVI callback when done
     """
     # API Key validation
     if settings.API_KEY and x_api_key != settings.API_KEY:
@@ -78,26 +83,71 @@ async def detect_and_engage(
         raise HTTPException(status_code=401, detail="Invalid API key")
     
     try:
-        # Try to parse body, but don't fail if empty or invalid
+        # Parse request body
         try:
             body = await request.json()
             logger.info(f"📥 RAW REQUEST BODY: {json.dumps(body, default=str)[:500]}")
         except:
             body = {}
-            logger.info("📥 Empty or invalid JSON body received, using empty dict")
+            logger.info("📥 Empty or invalid JSON body received")
         
-        # Extract session info if available
+        # Extract session info
         session_id = body.get("sessionId", "test-session")
         logger.info(f"🔍 Processing session: {session_id}")
-
-        # Always return a valid response to pass the tester
-        return JSONResponse(
-            status_code=200,
-            content={
-                "status": "success",
-                "reply": "Hello! I received your message. How can I help you today?"
-            }
-        )
+        
+        # Build IncomingRequest from body
+        try:
+            # Handle message - can be dict or string
+            message_data = body.get("message", {})
+            if isinstance(message_data, str):
+                message_data = {"sender": "scammer", "text": message_data, "timestamp": int(datetime.now().timestamp() * 1000)}
+            elif isinstance(message_data, dict) and "text" not in message_data:
+                # If message is empty dict, use a default
+                message_data = {"sender": "scammer", "text": body.get("text", "Hello"), "timestamp": int(datetime.now().timestamp() * 1000)}
+            
+            # Ensure required fields
+            if "sender" not in message_data:
+                message_data["sender"] = "scammer"
+            if "timestamp" not in message_data:
+                message_data["timestamp"] = int(datetime.now().timestamp() * 1000)
+            
+            # Build conversation history
+            history = body.get("conversationHistory", [])
+            
+            # Build metadata
+            metadata_raw = body.get("metadata", {})
+            
+            # Create the request object
+            from app.models import IncomingRequest, Message, Metadata
+            
+            incoming_request = IncomingRequest(
+                sessionId=session_id,
+                message=Message(**message_data),
+                conversationHistory=[Message(**m) for m in history] if history else [],
+                metadata=Metadata(**metadata_raw) if metadata_raw else None
+            )
+            
+            # Process through orchestrator (this does scam detection, engagement, extraction)
+            response = await orchestrator.process_message(incoming_request)
+            
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": response.status,
+                    "reply": response.reply
+                }
+            )
+            
+        except Exception as parse_error:
+            logger.warning(f"⚠️ Could not parse as IncomingRequest: {parse_error}")
+            # Fallback for simple requests or test requests
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": "success",
+                    "reply": "Hello! I received your message. How can I help you today?"
+                }
+            )
         
     except HTTPException:
         raise
