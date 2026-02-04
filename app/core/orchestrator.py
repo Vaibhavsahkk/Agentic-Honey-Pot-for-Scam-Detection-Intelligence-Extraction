@@ -133,10 +133,9 @@ class ConversationOrchestrator:
         """
         Decide if conversation should be terminated
         
-        Enhanced criteria for better intelligence quality:
-        - Got critical intelligence (UPI or phishing link)
-        - Reached reasonable engagement (8+ turns with some intel)
-        - Max turns safety limit (15)
+        AGGRESSIVE callback to ensure evaluation:
+        - Send callback as soon as we have ANY intelligence
+        - Don't wait too long - GUVI may only send a few messages
         """
         intelligence = session.get("extracted_intelligence", {})
         turn_count = session["turn_count"]
@@ -155,24 +154,24 @@ class ConversationOrchestrator:
             len(intelligence.get("phoneNumbers", []))
         ])
         
-        # End conditions (prioritized):
+        # End conditions (AGGRESSIVE - send callback early):
         
-        # 1. Got critical intel (UPI or link) - high value target achieved
-        if (has_upi or has_link) and turn_count >= 3:
-            logger.info(f"✅ Ending: Got critical intelligence after {turn_count} turns")
+        # 1. Got critical intel (UPI or link) - send immediately after 1 turn
+        if (has_upi or has_link) and turn_count >= 1:
+            logger.info(f"✅ Ending: Got critical intelligence (UPI/link) after {turn_count} turns")
             return True
         
-        # 2. Good engagement with multiple intel types (8+ turns, 2+ entities)
-        if turn_count >= 8 and total_entities >= 2:
-            logger.info(f"✅ Ending: Good engagement - {turn_count} turns, {total_entities} entities")
+        # 2. Got any entity after 2+ turns
+        if turn_count >= 2 and total_entities >= 1:
+            logger.info(f"✅ Ending: Got intelligence after {turn_count} turns")
             return True
         
-        # 3. Reasonable engagement with decent intel (10+ turns, any intel)
-        if turn_count >= 10 and total_entities >= 1:
-            logger.info(f"✅ Ending: Reasonable engagement - {turn_count} turns")
+        # 3. Even without intel, send callback after 3 turns (scam detected is valuable)
+        if turn_count >= 3:
+            logger.info(f"✅ Ending: Sufficient engagement ({turn_count} turns)")
             return True
         
-        # 4. Safety limit - don't go too long
+        # 4. Safety limit
         if turn_count >= settings.MAX_CONVERSATION_TURNS:
             logger.info(f"✅ Ending: Max turns reached ({turn_count})")
             return True
