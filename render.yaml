@@ -6,9 +6,9 @@ services:
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: API_KEY
-        value: test-api-key-12345
+        sync: false  # Set in Render dashboard
       - key: GROQ_API_KEY
-        sync: false
+        sync: false  # Set in Render dashboard
       - key: LLM_PROVIDER
         value: groq
       - key: DEBUG_MODE
