@@ -1,22 +1,49 @@
+# Environment
 .env
+.env.local
+.env.*.local
+
+# Virtual Environment
 venv/
+.venv/
+env/
+ENV/
+
+# Python
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
+*.py[cod]
+*$py.class
 *.so
+.Python
 *.egg
 *.egg-info/
 dist/
 build/
+.eggs/
+
+# Logs
 *.log
+logs/
+
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+
+# OS
 .DS_Store
-logs/
+Thumbs.db
+
+# Database
 *.db
 *.sqlite3
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Vercel
+.vercel
