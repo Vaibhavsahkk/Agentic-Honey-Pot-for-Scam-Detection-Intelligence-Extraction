@@ -1,0 +1,14 @@
+{
+  "sessionId": "test-session-001",
+  "message": {
+    "sender": "scammer",
+    "text": "Your bank account will be blocked today. Verify immediately by clicking this link: bit.ly/sbi-kyc and share your UPI ID.",
+    "timestamp": 1770005528731
+  },
+  "conversationHistory": [],
+  "metadata": {
+    "channel": "SMS",
+    "language": "English",
+    "locale": "IN"
+  }
+}

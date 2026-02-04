@@ -1,0 +1,1 @@
+Start-Process -FilePath "d:\HACKATHON\venv\Scripts\uvicorn.exe" -ArgumentList "app.main:app --host 0.0.0.0 --port 8022" -WindowStyle Minimized -RedirectStandardOutput "server.log" -RedirectStandardError "server_err.log"
