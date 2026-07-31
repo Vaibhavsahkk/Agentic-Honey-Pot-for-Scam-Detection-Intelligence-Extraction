@@ -1,0 +1,38 @@
+name: Agentic Honeypot CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
+
+    - name: Install C++ Build Tools & Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y g++ cmake libsndfile1
+        pip install -r requirements.txt
+        pip install pytest
+
+    - name: Compile C++ Native DSP Library
+      run: |
+        g++ -O3 -shared -fPIC -o app/core/libnative_dsp.so app/core/native_dsp.cpp
+
+    - name: Run PyTest Test Suite
+      run: |
+        pytest tests/
+
+    - name: Build Docker Container
+      run: |
+        docker build -t agentic-honeypot:latest .

@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  agentic-honeypot-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - GROQ_API_KEY=dummy_groq_api_key
+      - LOG_LEVEL=INFO
+      - HOST=0.0.0.0
+      - PORT=8000

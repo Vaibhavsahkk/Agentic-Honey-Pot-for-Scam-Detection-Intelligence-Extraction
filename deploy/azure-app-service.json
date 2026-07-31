@@ -1,0 +1,20 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2022-03-01",
+      "name": "agentic-honeypot-api",
+      "location": "East US",
+      "properties": {
+        "siteConfig": {
+          "linuxFxVersion": "DOCKER|mcr.microsoft.com/appsvc/python:3.10-slim",
+          "appSettings": [
+            { "name": "WEBSITES_PORT", "value": "8000" }
+          ]
+        }
+      }
+    }
+  ]
+}
