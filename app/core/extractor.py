@@ -22,7 +22,8 @@ class IntelligenceExtractor:
             r'\b[a-zA-Z0-9.\-_]{2,256}@'
             r'(?:upi|paytm|ybl|oksbi|okhdfcbank|okicici|okaxis|'
             r'okbizaxis|ibl|axl|payzapp|ikwik|fam|apl|abf|pingpay|'
-            r'olamoney|phonepe|googlepay|gpay|amazonpay)\b',
+            r'olamoney|phonepe|googlepay|gpay|amazonpay|icici|sbi|'
+            r'hdfc|axisbank|barodampay|kotak|pnb|idfc|rbl|cbin|psb)\b',
             re.IGNORECASE
         ),
         
@@ -37,9 +38,9 @@ class IntelligenceExtractor:
             r'(?:\+91[\-\s]?)?[0]?(?:91)?[789]\d{9}\b'
         ),
         
-        # URLs and links
+        # URLs and links (includes hash fragments #)
         "phishingLinks": re.compile(
-            r'http[s]?://(?:[a-zA-Z0-9$\-_@.&+!*\\(\\)/=?]|'
+            r'http[s]?://(?:[a-zA-Z0-9$\-_@.&+!*\\(\\)/=?#]|'
             r'(?:%[0-9a-fA-F][0-9a-fA-F]))+'
         ),
         
